@@ -28,8 +28,8 @@ window.SITE_CONFIG = {
      * 留空 "" 则使用纯色/渐变背景 */
     image: "assets/img/my-pg.png",
     /* 背景图透明度压暗，用来保证文字可读性。0~1，越大越暗 */
-    overlay: 0,
+    overlay: 0.15,
     /* 是否给背景图片加一点高斯模糊（0 = 不模糊） */
-    blur: 0,
+    blur: 0.35,
   },
 };
