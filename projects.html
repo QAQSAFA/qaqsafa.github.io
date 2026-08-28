@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="开源项目">
+  <title>开源项目 · Cloudier Ace</title>
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- 导航 -->
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="index.html" id="navBrand">Cloudier Ace<span class="dot">.</span></a>
+      <nav class="nav-links" id="navMenu">
+        <a href="index.html">首页</a>
+        <a href="posts.html">文章</a>
+        <a href="projects.html" class="active">开源</a>
+        <a href="https://github.com/QAQSAFA" target="_blank" rel="noopener">GitHub ↗</a>
+      </nav>
+      <button class="nav-toggle" id="navToggle" aria-label="菜单">☰</button>
+    </div>
+  </header>
+
+  <!-- 页头 -->
+  <div class="page-head wrap">
+    <h1 class="reveal in">开源<em style="color:var(--accent);font-style:normal">项目</em></h1>
+    <p class="reveal in">我的一些开源作品。项目信息在 <code style="background:#f1f0ec;padding:2px 8px;border-radius:6px">data/projects.json</code> 里维护。</p>
+  </div>
+
+  <!-- 项目列表 -->
+  <section class="wrap" style="padding-top:40px">
+    <div class="project-grid" id="projectList"></div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="f-brand" id="footName">Cloudier Ace</div>
+      <div class="f-meta">© <span id="footYear">2026</span> Cloudier Ace</div>
+      <div class="social"><a href="https://github.com/QAQSAFA" target="_blank" rel="noopener">GitHub</a></div>
+    </div>
+  </footer>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/markdown.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    fetch("data/projects.json").then(function (r) { return r.json(); }).then(function (projects) {
+      var box = document.getElementById("projectList");
+      if (!projects || !projects.length) {
+        box.innerHTML = '<p style="color:var(--muted)">暂无项目，去 data/projects.json 添加吧。</p>';
+        return;
+      }
+      box.innerHTML = projects.map(function (p) {
+        var tech = (p.techStack || []).map(function (t) {
+          return '<span class="tag">' + MD.escapeHtml(t) + "</span>";
+        }).join("");
+        var links = "";
+        if (p.githubUrl) links += '<a href="' + MD.escapeHtml(p.githubUrl) + '" target="_blank" rel="noopener">GitHub ↗</a>';
+        if (p.demoUrl) links += '<a href="' + MD.escapeHtml(p.demoUrl) + '" target="_blank" rel="noopener">Demo ↗</a>';
+        return '<div class="project-card reveal in">' +
+          '<div class="p-name">' + MD.escapeHtml(p.name || "") +
+            (p.stars ? ' <span class="star">★ ' + p.stars + "</span>" : "") + "</div>" +
+          '<div class="p-desc">' + MD.escapeHtml(p.description || "") + "</div>" +
+          '<div class="p-tech">' + tech + "</div>" +
+          '<div class="p-links">' + links + "</div>" +
+        "</div>";
+      }).join("");
+    });
+  </script>
+</body>
+</html>

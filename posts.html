@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="全部文章">
+  <title>文章 · Cloudier Ace</title>
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- 导航 -->
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="index.html" id="navBrand">Cloudier Ace<span class="dot">.</span></a>
+      <nav class="nav-links" id="navMenu">
+        <a href="index.html">首页</a>
+        <a href="posts.html" class="active">文章</a>
+        <a href="projects.html">开源</a>
+        <a href="https://github.com/QAQSAFA" target="_blank" rel="noopener">GitHub ↗</a>
+      </nav>
+      <button class="nav-toggle" id="navToggle" aria-label="菜单">☰</button>
+    </div>
+  </header>
+
+  <!-- 页头 -->
+  <div class="page-head wrap">
+    <h1 class="reveal in">文<em style="color:var(--accent);font-style:normal">章</em></h1>
+    <p class="reveal in">按 <kbd style="background:#f1f0ec;padding:2px 8px;border-radius:6px">P</kbd> 键切换 iOS 后台堆叠模式</p>
+  </div>
+
+  <!-- 工具条 -->
+  <section class="wrap" style="padding-top:34px">
+    <div class="toolbar">
+      <div class="search-box">
+        <span class="icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="搜索文章…">
+      </div>
+      <div class="tag-filter" id="tagFilter"></div>
+      <button class="stack-btn" id="stackToggleBtn">⧉ 堆叠模式</button>
+    </div>
+    <div class="post-grid" id="postList"></div>
+    <p id="emptyTip" style="display:none;color:var(--muted);text-align:center;padding:60px 0">没有找到相关文章。</p>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="f-brand" id="footName">Cloudier Ace</div>
+      <div class="f-meta">© <span id="footYear">2026</span> Cloudier Ace</div>
+      <div class="social"><a href="https://github.com/QAQSAFA" target="_blank" rel="noopener">GitHub</a></div>
+    </div>
+  </footer>
+
+  <!-- iOS 堆叠模式浮层 -->
+  <div class="stack-overlay" id="stackOverlay">
+    <div class="stack-hint">iOS 后台 · 拖动卡片 / ← → 键切换 · 点击打开 · Esc 退出</div>
+    <button class="stack-close" id="stackClose" aria-label="关闭">✕</button>
+    <div class="stack-stage">
+      <div class="stack-inner"></div>
+    </div>
+    <div class="stack-dots"></div>
+  </div>
+
+  <!-- 提示气泡 -->
+  <div class="hint-bubble" id="hintBubble">按 <kbd>P</kbd> 切换堆叠模式</div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/markdown.js"></script>
+  <script src="assets/js/posts.js"></script>
+  <script src="assets/js/stack.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    var allPosts = [];
+    var activeTag = "";
+    var filterBox = document.getElementById("tagFilter");
+    var listBox = document.getElementById("postList");
+    var searchInput = document.getElementById("searchInput");
+    var emptyTip = document.getElementById("emptyTip");
+
+    function render() {
+      var kw = searchInput.value.trim().toLowerCase();
+      var list = allPosts.filter(function (p) {
+        var hitKw = !kw || (p.title || "").toLowerCase().indexOf(kw) >= 0
+          || (p.summary || "").toLowerCase().indexOf(kw) >= 0
+          || (p.tags || []).join(" ").toLowerCase().indexOf(kw) >= 0;
+        var hitTag = !activeTag || (p.tags || []).indexOf(activeTag) >= 0;
+        return hitKw && hitTag;
+      });
+      listBox.innerHTML = list.map(POSTS.cardHtml).join("");
+      listBox.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("in"); });
+      emptyTip.style.display = list.length ? "none" : "block";
+    }
+
+    function buildTagFilter(posts) {
+      var tags = {};
+      posts.forEach(function (p) { (p.tags || []).forEach(function (t) { tags[t] = (tags[t] || 0) + 1; }); });
+      var keys = Object.keys(tags).sort();
+      if (!keys.length) return;
+      filterBox.innerHTML = '<button class="tag" data-t="" style="cursor:pointer;background:var(--ink);color:#fff">全部</button>' +
+        keys.map(function (t) {
+          return '<button class="tag" data-t="' + MD.escapeHtml(t) + '" style="cursor:pointer">' +
+            MD.escapeHtml(t) + " · " + tags[t] + "</button>";
+        }).join("");
+      filterBox.querySelectorAll(".tag").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          activeTag = btn.dataset.t;
+          filterBox.querySelectorAll(".tag").forEach(function (b) {
+            b.style.background = b.dataset.t === activeTag ? "var(--ink)" : "";
+            b.style.color = b.dataset.t === activeTag ? "#fff" : "";
+          });
+          render();
+        });
+      });
+    }
+
+    /* 初始化 */
+    STACK.init();
+    document.getElementById("stackClose").addEventListener("click", function () { STACK.close(); });
+
+    function applyPosts(posts) {
+      allPosts = posts;
+      buildTagFilter(posts);
+      render();
+      STACK.build(posts);
+    }
+    POSTS.load(applyPosts).then(applyPosts);
+
+    var bubbleShown = false;
+    function maybeShowHint(posts) {
+      if (bubbleShown || !posts || posts.length < 2) return;
+      bubbleShown = true;
+      setTimeout(function () { document.getElementById("hintBubble").classList.add("show"); }, 1800);
+      setTimeout(function () { document.getElementById("hintBubble").classList.remove("show"); }, 8000);
+    }
+    POSTS.load(maybeShowHint);
+
+    searchInput.addEventListener("input", render);
+  </script>
+</body>
+</html>

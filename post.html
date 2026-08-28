@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文章 · Cloudier Ace</title>
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- 导航 -->
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="index.html" id="navBrand">Cloudier Ace<span class="dot">.</span></a>
+      <nav class="nav-links" id="navMenu">
+        <a href="index.html">首页</a>
+        <a href="posts.html">文章</a>
+        <a href="projects.html">开源</a>
+        <a href="https://github.com/QAQSAFA" target="_blank" rel="noopener">GitHub ↗</a>
+      </nav>
+      <button class="nav-toggle" id="navToggle" aria-label="菜单">☰</button>
+    </div>
+  </header>
+
+  <!-- 文章内容 -->
+  <article class="post-detail" id="postDetail">
+    <a class="back-link" href="posts.html">← 返回文章列表</a>
+    <div id="postBody"></div>
+  </article>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="f-brand" id="footName">Cloudier Ace</div>
+      <div class="f-meta">© <span id="footYear">2026</span> Cloudier Ace</div>
+      <div class="social"><a href="https://github.com/QAQSAFA" target="_blank" rel="noopener">GitHub</a></div>
+    </div>
+  </footer>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/markdown.js"></script>
+  <script src="assets/js/posts.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    var slug = new URLSearchParams(location.search).get("slug");
+    var body = document.getElementById("postBody");
+
+    if (!slug) {
+      body.innerHTML = '<p style="color:var(--muted)">缺少文章参数。</p>';
+    } else {
+      function renderPost(post) {
+        if (!post) {
+          body.innerHTML = '<h1 class="detail-title">文章不存在</h1><p style="color:var(--muted);margin-top:14px">可能还没有发布，或链接有误。</p>';
+          return;
+        }
+        document.title = post.title + " · Cloudier Ace";
+        var tags = (post.tags || []).map(function (t) {
+          return '<span class="tag">' + MD.escapeHtml(t) + "</span>";
+        }).join("");
+        body.innerHTML =
+          '<h1 class="detail-title">' + MD.escapeHtml(post.title) + "</h1>" +
+          '<div class="detail-meta">' +
+            "<span>" + MD.formatDate(post.date) + "</span>" +
+            "<span>" + tags + "</span>" +
+          "</div>" +
+          '<div class="prose">' + MD.render(post.content) + "</div>";
+      }
+      /* 先渲染示例/缓存，GitHub 拉到真实文章后自动更新 */
+      POSTS.getBySlug(slug, renderPost).then(renderPost);
+    }
+  </script>
+</body>
+</html>
