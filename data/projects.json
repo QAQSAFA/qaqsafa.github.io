@@ -1,0 +1,10 @@
+[
+  {
+    "name": "cloudier-blog",
+    "description": "本博客站点的源代码：零构建、零图床的纯静态个人博客，支持 P 键 iOS 堆叠模式。",
+    "githubUrl": "https://github.com/QAQSAFA/QAQSAFA.github.io",
+    "demoUrl": "https://qaqsafa.github.io/",
+    "techStack": ["HTML", "CSS", "JavaScript", "Markdown"],
+    "stars": 0
+  }
+]
